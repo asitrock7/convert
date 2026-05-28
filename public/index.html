@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF to Video Generator</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 600px; margin: 50px auto; padding: 20px; text-align: center; }
+        .upload-box { border: 2px dashed #ccc; padding: 40px; border-radius: 10px; background: #f9f9f9; }
+        button { margin-top: 20px; padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        #status { margin-top: 20px; color: #555; }
+    </style>
+</head>
+<body>
+    <h2>PDF to Video Generator</h2>
+    <div class="upload-box">
+        <form id="uploadForm" enctype="multipart/form-data">
+            <input type="file" id="pdfInput" name="pdf" accept="application/pdf" required>
+            <br>
+            <button type="submit">Generate Video</button>
+        </form>
+    </div>
+    <div id="status"></div>
+
+    <script>
+        document.getElementById('uploadForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const statusText = document.getElementById('status');
+            const formData = new FormData(e.target);
+            
+            statusText.innerText = "Processing... This may take a minute depending on the PDF size.";
+            
+            try {
+                const response = await fetch('/convert', { method: 'POST', body: formData });
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'output.mp4';
+                    document.body.appendChild(a);
+                    a.click();
+                    a.remove();
+                    statusText.innerText = "Video downloaded successfully!";
+                } else {
+                    statusText.innerText = "Error generating video.";
+                }
+            } catch (err) {
+                statusText.innerText = "Network error occurred.";
+            }
+        };
+    </script>
+</body>
+</html>
